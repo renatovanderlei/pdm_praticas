@@ -46,7 +46,7 @@ class LoginActivity : ComponentActivity() {
 fun LoginPage(modifier: Modifier = Modifier) {
     var email by rememberSaveable { mutableStateOf("") }
     var password by rememberSaveable { mutableStateOf("") }
-    val activity = LocalContext.current as? Activity // Inicialize aqui
+    val activity = LocalContext.current as? Activity
 
     Column(
         modifier = modifier
@@ -56,18 +56,15 @@ fun LoginPage(modifier: Modifier = Modifier) {
         horizontalAlignment = CenterHorizontally,
     ) {
         Text(
-            text = "Bem-vindo/a!",
-            fontSize = 24.sp
+            text = "Bem-vindo/a!", fontSize = 24.sp
         )
 
         Spacer(modifier = Modifier.size(24.dp))
 
-        OutlinedTextField(
-            value = email,
+        OutlinedTextField(value = email,
             label = { Text(text = "Digite seu e-mail") },
             modifier = modifier.fillMaxWidth(),
-            onValueChange = { email = it }
-        )
+            onValueChange = { email = it })
 
         Spacer(modifier = Modifier.size(24.dp))
 
@@ -91,26 +88,34 @@ fun LoginPage(modifier: Modifier = Modifier) {
                             )
                         )
                     } else {
-                        Toast.makeText(activity, "Preencha todos os campos", Toast.LENGTH_LONG).show()
+                        Toast.makeText(activity, "Preencha todos os campos", Toast.LENGTH_LONG)
+                            .show()
                     }
-                },
-                enabled = email.isNotEmpty() && password.isNotEmpty()
+                }, enabled = email.isNotEmpty() && password.isNotEmpty()
             ) {
                 Text("Login")
             }
-            Button(
-                onClick = { email = ""; password = "" }
-            ) {
+            Button(onClick = { email = ""; password = "" }) {
                 Text("Limpar")
+            }
+        }
+// Botão para registrar
+        Row(modifier = modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
+            Button(
+                onClick = {
+                    activity?.startActivity(Intent(activity, RegisterActivity::class.java))
+                }
+            ) {
+                Text("Registrar-se")
             }
         }
     }
 }
 
-@Preview(showBackground = true)
-@Composable
-fun LoginPagePreview() {
-    WeatherAppTheme {
-        LoginPage()
+    @Preview(showBackground = true)
+    @Composable
+    fun LoginPagePreview() {
+        WeatherAppTheme {
+            LoginPage()
+        }
     }
-}
