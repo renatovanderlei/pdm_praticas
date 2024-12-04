@@ -1,19 +1,13 @@
 package com.weatherapp
 
 import android.app.Activity
+import android.content.Intent
 import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.*
 import androidx.compose.material3.Button
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
@@ -48,14 +42,16 @@ class LoginActivity : ComponentActivity() {
     }
 }
 
-@Preview(showBackground = true)
 @Composable
 fun LoginPage(modifier: Modifier = Modifier) {
     var email by rememberSaveable { mutableStateOf("") }
     var password by rememberSaveable { mutableStateOf("") }
-    val activity = LocalContext.current as? Activity
+    val activity = LocalContext.current as? Activity // Inicialize aqui
+
     Column(
-        modifier = modifier.padding(16.dp).fillMaxSize(),
+        modifier = modifier
+            .padding(16.dp)
+            .fillMaxSize(),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = CenterHorizontally,
     ) {
@@ -88,7 +84,15 @@ fun LoginPage(modifier: Modifier = Modifier) {
         Row(modifier = modifier) {
             Button(
                 onClick = {
-                    Toast.makeText(activity, "Login OK!", Toast.LENGTH_LONG).show()
+                    if (email.isNotEmpty() && password.isNotEmpty()) {
+                        activity?.startActivity(
+                            Intent(activity, MainActivity::class.java).setFlags(
+                                Intent.FLAG_ACTIVITY_SINGLE_TOP
+                            )
+                        )
+                    } else {
+                        Toast.makeText(activity, "Preencha todos os campos", Toast.LENGTH_LONG).show()
+                    }
                 },
                 enabled = email.isNotEmpty() && password.isNotEmpty()
             ) {
@@ -100,5 +104,13 @@ fun LoginPage(modifier: Modifier = Modifier) {
                 Text("Limpar")
             }
         }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun LoginPagePreview() {
+    WeatherAppTheme {
+        LoginPage()
     }
 }
