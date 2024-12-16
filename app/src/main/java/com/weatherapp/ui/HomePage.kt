@@ -16,10 +16,9 @@ import androidx.compose.ui.unit.sp
 import com.weatherapp.R
 
 @Composable
-fun HomePage(modifier: Modifier = Modifier) {
+fun HomePage() {
     Column(
-        modifier = modifier
-            .fillMaxSize()
+        modifier = Modifier.fillMaxSize()
             .background(colorResource(id = R.color.teal_700))
             .wrapContentSize(Alignment.Center)
     ) {
