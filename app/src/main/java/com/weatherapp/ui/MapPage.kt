@@ -13,17 +13,25 @@ import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.weatherapp.R
+import com.weatherapp.model.MainViewModel
 
 @Composable
-fun MapPage() {
+fun MapPage(
+    viewModel: MainViewModel,
+    modifier: Modifier = Modifier
+) {
+    val cities = viewModel.cities
+
     Column(
-        modifier = Modifier.fillMaxSize()
+        modifier = modifier
+            .fillMaxSize()
             .background(colorResource(id = R.color.purple_700))
             .wrapContentSize(Alignment.Center)
     ) {
         Text(
-            text = "Mapa",
+            text = "Mapa - Total de Cidades: ${cities.size}",
             fontWeight = FontWeight.Bold,
             color = Color.White,
             modifier = Modifier.align(Alignment.CenterHorizontally),

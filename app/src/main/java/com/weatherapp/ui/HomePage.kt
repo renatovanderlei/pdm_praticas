@@ -13,17 +13,25 @@ import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.weatherapp.R
+import com.weatherapp.model.MainViewModel
 
 @Composable
-fun HomePage() {
+fun HomePage(
+    viewModel: MainViewModel,
+    modifier: Modifier = Modifier
+) {
+    val cities = viewModel.cities
+
     Column(
-        modifier = Modifier.fillMaxSize()
+        modifier = modifier
+            .fillMaxSize()
             .background(colorResource(id = R.color.teal_700))
             .wrapContentSize(Alignment.Center)
     ) {
         Text(
-            text = "Home",
+            text = "Home - Total de Cidades: ${cities.size}",
             fontWeight = FontWeight.Bold,
             color = Color.White,
             modifier = Modifier.align(Alignment.CenterHorizontally),
