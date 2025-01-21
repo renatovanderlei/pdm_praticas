@@ -32,6 +32,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.weatherapp.ui.theme.WeatherAppTheme
+import com.google.firebase.auth.ktx.auth
+import com.google.firebase.ktx.Firebase
 
 class RegisterActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -112,8 +114,19 @@ fun RegisterPage(modifier: Modifier = Modifier) {
         Row(modifier = modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
             Button(
                 onClick = {
-                    Toast.makeText(activity, "Registro realizado com sucesso!", Toast.LENGTH_LONG).show()
-                    activity?.finish() // Finaliza e volta para LoginActivity
+                    Firebase.auth.createUserWithEmailAndPassword(email, password)
+                        .addOnCompleteListener(activity!!) { task ->
+                            if (task.isSuccessful) {
+                                Toast.makeText(activity, "Registro OK!", Toast.LENGTH_LONG).show()
+                                activity.startActivity(
+                                    Intent(activity, MainActivity::class.java).setFlags(
+                                        Intent.FLAG_ACTIVITY_SINGLE_TOP
+                                    )
+                                )
+                            } else {
+                                Toast.makeText(activity, "Registro FALHOU!", Toast.LENGTH_LONG).show()
+                            }
+                        }
                 },
                 enabled = name.isNotEmpty() && email.isNotEmpty() &&
                         password.isNotEmpty() && password == confirmpassword
@@ -127,12 +140,12 @@ fun RegisterPage(modifier: Modifier = Modifier) {
             ) {
                 Text("Limpar")
             }
-            //Botão para cancelar e voltar para a tela de login
+            // Botão para cancelar e voltar para a tela de login
             Button(
                 onClick = {
                     activity?.startActivity(
                         Intent(activity, LoginActivity::class.java).setFlags(
-                            Intent.FLAG_ACTIVITY_SINGLE_TOP
+                            Intent.FLAG_ACTIVITY_SINGLE_TOP or Intent.FLAG_ACTIVITY_NO_HISTORY
                         )
                     )
                 },

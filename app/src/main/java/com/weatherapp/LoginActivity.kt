@@ -25,6 +25,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.weatherapp.ui.theme.WeatherAppTheme
+import com.google.firebase.auth.ktx.auth
+import com.google.firebase.ktx.Firebase
 
 class LoginActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -82,11 +84,19 @@ fun LoginPage(modifier: Modifier = Modifier) {
             Button(
                 onClick = {
                     if (email.isNotEmpty() && password.isNotEmpty()) {
-                        activity?.startActivity(
-                            Intent(activity, MainActivity::class.java).setFlags(
-                                Intent.FLAG_ACTIVITY_SINGLE_TOP
-                            )
-                        )
+                        Firebase.auth.signInWithEmailAndPassword(email, password)
+                            .addOnCompleteListener(activity!!) { task ->
+                                if (task.isSuccessful) {
+                                    activity.startActivity(
+                                        Intent(activity, MainActivity::class.java).setFlags(
+                                            Intent.FLAG_ACTIVITY_SINGLE_TOP
+                                        )
+                                    )
+                                    Toast.makeText(activity, "Login OK!", Toast.LENGTH_LONG).show()
+                                } else {
+                                    Toast.makeText(activity, "Login FALHOU!", Toast.LENGTH_LONG).show()
+                                }
+                            }
                     } else {
                         Toast.makeText(activity, "Preencha todos os campos", Toast.LENGTH_LONG)
                             .show()
@@ -112,10 +122,10 @@ fun LoginPage(modifier: Modifier = Modifier) {
     }
 }
 
-    @Preview(showBackground = true)
-    @Composable
-    fun LoginPagePreview() {
-        WeatherAppTheme {
-            LoginPage()
-        }
+@Preview(showBackground = true)
+@Composable
+fun LoginPagePreview() {
+    WeatherAppTheme {
+        LoginPage()
     }
+}

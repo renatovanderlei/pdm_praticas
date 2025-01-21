@@ -21,22 +21,10 @@ import com.google.maps.android.compose.MapUiSettings
 import com.google.maps.android.compose.rememberCameraPositionState
 
 @Composable
-fun MapPage(
-    viewModel: MainViewModel,
-    modifier: Modifier = Modifier
-) {
-    val cities = viewModel.cities
-
-    // Estado da posição da câmera
-    val camPosState = rememberCameraPositionState()
-
-    // Localizações
+fun MapPage(viewModel: MainViewModel) {
     val recife = LatLng(-8.05, -34.9)
     val caruaru = LatLng(-8.27, -35.98)
     val joaopessoa = LatLng(-7.12, -34.84)
-    val catimbau = LatLng(-8.486, -37.158)
-    val maceio = LatLng(-9.6658, -35.735)
-
     val context = LocalContext.current
     val hasLocationPermission by remember {
         mutableStateOf(
@@ -47,15 +35,17 @@ fun MapPage(
         )
     }
 
+    val camPosState = rememberCameraPositionState()
+
     GoogleMap(
-        modifier = modifier.fillMaxSize(),
+        modifier = Modifier.fillMaxSize(),
         cameraPositionState = camPosState,
         properties = MapProperties(isMyLocationEnabled = hasLocationPermission),
         uiSettings = MapUiSettings(myLocationButtonEnabled = true),
         onMapClick = { viewModel.add("Nova cidade", location = it) },
-        //onPOIClick = { viewModel.add("Nova cidade", location = it) },
-    )
-        // Adicionar marcadores
+        onPOIClick = { poi -> viewModel.add("Novo Ponto de Interesse", location = poi.latLng) }
+    ) {
+        // Add markers for predefined locations
         Marker(
             state = MarkerState(position = recife),
             title = "Recife",
@@ -74,20 +64,7 @@ fun MapPage(
             snippet = "Marcador em João Pessoa",
             icon = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED)
         )
-        Marker(
-            state = MarkerState(position = catimbau),
-            title = "Vale do Catimbau",
-            snippet = "Marcador em Vale do Catimbau",
-            icon = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_YELLOW)
-        )
-        Marker(
-            state = MarkerState(position = maceio),
-            title = "Maceió",
-            snippet = "Marcador em Maceió",
-            icon = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_ORANGE)
-        )
-
-        // Adicionar marcadores das cidades com localização definida
+        // Add markers for favorite cities with defined locations
         viewModel.cities.forEach {
             if (it.location != null) {
                 Marker(
@@ -98,3 +75,4 @@ fun MapPage(
             }
         }
     }
+}
