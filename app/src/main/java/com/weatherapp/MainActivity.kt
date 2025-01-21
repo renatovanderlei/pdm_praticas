@@ -35,19 +35,21 @@ class MainActivity : ComponentActivity() {
             val viewModel: MainViewModel by viewModels()
             val navController = rememberNavController()
             val currentRoute = navController.currentBackStackEntryAsState()
-            val showButton = currentRoute.value?.destination?.route == "list"
+            val showButton = currentRoute.value?.destination?.route == "list" // Verifica se está na rota "list"
+
+            // Launcher para solicitar permissão de localização
             val launcher = rememberLauncherForActivityResult(
                 contract = ActivityResultContracts.RequestPermission(),
                 onResult = { granted ->
                     if (granted) {
-                        // Permissão concedida, você pode usar a localização aqui
+                        // Permissão concedida
                     } else {
                         // Permissão negada
                     }
                 }
             )
 
-            // Verificar se a permissão já foi concedida
+            // Solicita a permissão de localização se ainda não foi concedida
             LaunchedEffect(Unit) {
                 if (ContextCompat.checkSelfPermission(
                         this@MainActivity,
@@ -59,6 +61,7 @@ class MainActivity : ComponentActivity() {
             }
 
             WeatherAppTheme {
+                // Exibe o diálogo para adicionar cidade
                 if (showDialog) {
                     CityDialog(
                         onDismiss = { showDialog = false },
@@ -77,7 +80,7 @@ class MainActivity : ComponentActivity() {
                                 IconButton(onClick = { finish() }) {
                                     Icon(
                                         imageVector = Icons.AutoMirrored.Filled.ExitToApp,
-                                        contentDescription = "Localized description"
+                                        contentDescription = "Sair"
                                     )
                                 }
                             }
