@@ -30,10 +30,13 @@ fun MapPage(
     // Estado da posição da câmera
     val camPosState = rememberCameraPositionState()
 
-    // Declaração das localizações
+    // Localizações
     val recife = LatLng(-8.05, -34.9)
     val caruaru = LatLng(-8.27, -35.98)
     val joaopessoa = LatLng(-7.12, -34.84)
+    val catimbau = LatLng(-8.486, -37.158)
+    val maceio = LatLng(-9.6658, -35.735)
+
     val context = LocalContext.current
     val hasLocationPermission by remember {
         mutableStateOf(
@@ -49,9 +52,10 @@ fun MapPage(
         cameraPositionState = camPosState,
         properties = MapProperties(isMyLocationEnabled = hasLocationPermission),
         uiSettings = MapUiSettings(myLocationButtonEnabled = true),
-        onMapClick = { viewModel.add("Nova cidade", location = it) }
+        onMapClick = { viewModel.add("Nova cidade", location = it) },
+        onPOIClick = { viewModel.add("Nova cidade", location = it) },
     ) {
-        // Adicionar marcadores para as localizações predefinidas
+        // Adicionar marcadores
         Marker(
             state = MarkerState(position = recife),
             title = "Recife",
@@ -70,8 +74,20 @@ fun MapPage(
             snippet = "Marcador em João Pessoa",
             icon = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED)
         )
+        Marker(
+            state = MarkerState(position = catimbau),
+            title = "Vale do Catimbau",
+            snippet = "Marcador em Vale do Catimbau",
+            icon = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_YELLOW)
+        )
+        Marker(
+            state = MarkerState(position = maceio),
+            title = "Maceió",
+            snippet = "Marcador em Maceió",
+            icon = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_ORANGE)
+        )
 
-        // Adicionar marcadores para as cidades favoritas com localização definida
+        // Adicionar marcadores das cidades com localização definida
         viewModel.cities.forEach {
             if (it.location != null) {
                 Marker(
