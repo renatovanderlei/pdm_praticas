@@ -53,8 +53,8 @@ fun MapPage(
         properties = MapProperties(isMyLocationEnabled = hasLocationPermission),
         uiSettings = MapUiSettings(myLocationButtonEnabled = true),
         onMapClick = { viewModel.add("Nova cidade", location = it) },
-        onPOIClick = { viewModel.add("Nova cidade", location = it) },
-    ) {
+        //onPOIClick = { viewModel.add("Nova cidade", location = it) },
+    )
         // Adicionar marcadores
         Marker(
             state = MarkerState(position = recife),
@@ -98,4 +98,3 @@ fun MapPage(
             }
         }
     }
-}

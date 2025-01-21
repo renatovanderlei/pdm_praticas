@@ -14,7 +14,7 @@ class MainViewModel : ViewModel() {
     }
 
     // Função 'add' com parâmetro opcional 'location'
-    fun add(name: String, location: LatLng? = null) {
+    fun add(name: String, location: LatLng = null) {
         _cities.add(City(name = name, location = location))
     }
 }
