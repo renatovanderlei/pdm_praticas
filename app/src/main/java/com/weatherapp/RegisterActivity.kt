@@ -84,7 +84,7 @@ fun RegisterPage(modifier: Modifier = Modifier) {
 
         OutlinedTextField(
             value = email,
-            label = { Text(text = "Digite seu e-mail") },
+            label = { Text(text = "Digite seu e-mail: nome@email.com") },
             modifier = modifier.fillMaxWidth(),
             onValueChange = { email = it }
         )
@@ -93,7 +93,7 @@ fun RegisterPage(modifier: Modifier = Modifier) {
 
         OutlinedTextField(
             value = password,
-            label = { Text(text = "Digite sua senha") },
+            label = { Text(text = "Digite sua senha (mínimo 6 caracteres)") },
             modifier = modifier.fillMaxWidth(),
             onValueChange = { password = it },
             visualTransformation = PasswordVisualTransformation()
@@ -133,6 +133,27 @@ fun RegisterPage(modifier: Modifier = Modifier) {
             ) {
                 Text("Registrar")
             }
+            //Button(
+                //onClick = {
+                    //Firebase.auth.createUserWithEmailAndPassword(email, password)
+                        //.addOnCompleteListener(activity!!) { task ->
+                           // if (task.isSuccessful) {
+                                //Toast.makeText(activity, "Registro OK!", Toast.LENGTH_LONG).show()
+                                //activity.startActivity(
+                                    //Intent(activity, MainActivity::class.java).setFlags(
+                                        //Intent.FLAG_ACTIVITY_SINGLE_TOP
+                                    //)
+                                //)
+                            //} else {
+                                //Toast.makeText(activity, "Registro FALHOU!", Toast.LENGTH_LONG).show()
+                            //}
+                        //}
+                //},
+                //enabled = name.isNotEmpty() && email.isNotEmpty() &&
+                        //password.isNotEmpty() && password == confirmpassword
+            //) {
+                //Text("Registrar")
+            //}
             Button(
                 onClick = {
                     name = ""; email = ""; password = ""; confirmpassword = ""
