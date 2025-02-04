@@ -1,4 +1,4 @@
-package com.weatherapp.db.fb
+package com.weatherapp.fb
 
 import com.google.android.gms.maps.model.LatLng
 import com.weatherapp.model.City

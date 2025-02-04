@@ -17,39 +17,39 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.core.content.ContextCompat
 import androidx.core.content.PermissionChecker
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import com.weatherapp.fb.FBDatabase
+import com.weatherapp.model.MainViewModel
+import com.weatherapp.model.MainViewModelFactory
 import com.weatherapp.ui.CityDialog
 import com.weatherapp.ui.nav.BottomNavBar
 import com.weatherapp.ui.nav.BottomNavItem
 import com.weatherapp.ui.nav.MainNavHost
 import com.weatherapp.ui.theme.WeatherAppTheme
-import com.weatherapp.model.MainViewModel
 
 class MainActivity : ComponentActivity() {
     @OptIn(ExperimentalMaterial3Api::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            var showDialog by remember { mutableStateOf(false) }
-            val viewModel: MainViewModel by viewModels()
+            val fbDB = remember { FBDatabase() }
+            val viewModel: MainViewModel = viewModel(factory = MainViewModelFactory(fbDB))
             val navController = rememberNavController()
             val currentRoute = navController.currentBackStackEntryAsState()
-            val showButton = currentRoute.value?.destination?.route == "list" // Verifica se está na rota "list"
+            val showButton = currentRoute.value?.destination?.route == "list"
+            var showDialog by remember { mutableStateOf(false) }
 
-            // Launcher para solicitar permissão de localização
             val launcher = rememberLauncherForActivityResult(
                 contract = ActivityResultContracts.RequestPermission(),
                 onResult = { granted ->
-                    if (granted) {
-                        // Permissão concedida
-                    } else {
-                        // Permissão negada
+                    if (!granted) {
+                        // Permissão negada, lidar conforme necessário
                     }
                 }
             )
 
-            // Solicita a permissão de localização se ainda não foi concedida
             LaunchedEffect(Unit) {
                 if (ContextCompat.checkSelfPermission(
                         this@MainActivity,
@@ -61,7 +61,6 @@ class MainActivity : ComponentActivity() {
             }
 
             WeatherAppTheme {
-                // Exibe o diálogo para adicionar cidade
                 if (showDialog) {
                     CityDialog(
                         onDismiss = { showDialog = false },
@@ -75,10 +74,10 @@ class MainActivity : ComponentActivity() {
                 Scaffold(
                     topBar = {
                         TopAppBar(
-                            title =  {
-                                val name = viewModel.user?.name?:"[não logado]"
+                            title = {
+                                val name = viewModel.user?.name ?: "[não logado]"
                                 Text("Bem-vindo/a! $name")
-                            } ,
+                            },
                             actions = {
                                 IconButton(onClick = { finish() }) {
                                     Icon(

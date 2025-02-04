@@ -42,28 +42,28 @@ fun MapPage(viewModel: MainViewModel) {
         cameraPositionState = camPosState,
         properties = MapProperties(isMyLocationEnabled = hasLocationPermission),
         uiSettings = MapUiSettings(myLocationButtonEnabled = true),
-        onMapClick = { viewModel.add("Nova cidade", location = it) },
+        onMapClick = { viewModel.add("Cidade@${it.latitude}:${it.longitude}", location = it)  },
         onPOIClick = { poi -> viewModel.add("Novo Ponto de Interesse", location = poi.latLng) }
     ) {
         // Add markers for predefined locations
-        Marker(
-            state = MarkerState(position = recife),
-            title = "Recife",
-            snippet = "Marcador em Recife",
-            icon = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE)
-        )
-        Marker(
-            state = MarkerState(position = caruaru),
-            title = "Caruaru",
-            snippet = "Marcador em Caruaru",
-            icon = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN)
-        )
-        Marker(
-            state = MarkerState(position = joaopessoa),
-            title = "João Pessoa",
-            snippet = "Marcador em João Pessoa",
-            icon = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED)
-        )
+        //Marker(
+            //state = MarkerState(position = recife),
+            //title = "Recife",
+            //snippet = "Marcador em Recife",
+            //icon = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE)
+        //)
+        //Marker(
+            //state = MarkerState(position = caruaru),
+            //title = "Caruaru",
+            //snippet = "Marcador em Caruaru",
+            //icon = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN)
+       // )
+        //Marker(
+          //  state = MarkerState(position = joaopessoa),
+            //title = "João Pessoa",
+            //snippet = "Marcador em João Pessoa",
+            //icon = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED)
+        //)
         // Add markers for favorite cities with defined locations
         viewModel.cities.forEach {
             if (it.location != null) {
