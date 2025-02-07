@@ -10,21 +10,16 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.core.content.ContextCompat
-import com.google.android.gms.maps.model.LatLng
 import com.google.maps.android.compose.GoogleMap
 import com.google.maps.android.compose.Marker
 import com.google.maps.android.compose.MarkerState
 import com.weatherapp.model.MainViewModel
-import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.maps.android.compose.MapProperties
 import com.google.maps.android.compose.MapUiSettings
 import com.google.maps.android.compose.rememberCameraPositionState
 
 @Composable
 fun MapPage(viewModel: MainViewModel) {
-    val recife = LatLng(-8.05, -34.9)
-    val caruaru = LatLng(-8.27, -35.98)
-    val joaopessoa = LatLng(-7.12, -34.84)
     val context = LocalContext.current
     val hasLocationPermission by remember {
         mutableStateOf(
@@ -42,17 +37,19 @@ fun MapPage(viewModel: MainViewModel) {
         cameraPositionState = camPosState,
         properties = MapProperties(isMyLocationEnabled = hasLocationPermission),
         uiSettings = MapUiSettings(myLocationButtonEnabled = true),
-        onMapClick = { location ->viewModel.add(location) },
-        onPOIClick = { poi -> viewModel.add(poi.latLng)
-        }
+        onMapClick = { location -> viewModel.add(location) },
+        onPOIClick = { poi -> viewModel.add(poi.latLng) }
     ) {
         // Add markers for favorite cities with defined locations
-        viewModel.cities.forEach {
-            if (it.location != null) {
+        viewModel.cities.forEach { city ->
+            if (city.location != null) {
+                if (city.weather == null) {
+                    viewModel.loadWeather(city)
+                }
                 Marker(
-                    state = MarkerState(position = it.location),
-                    title = it.name,
-                    snippet = "${it.location}"
+                    state = MarkerState(position = city.location!!),
+                    title = city.name,
+                    snippet = city.weather?.desc ?: "Carregando..."
                 )
             }
         }

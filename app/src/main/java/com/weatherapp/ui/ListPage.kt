@@ -36,13 +36,23 @@ fun ListPage(
             .fillMaxSize()
             .padding(8.dp)
     ) {
+        //
         items(cityList) { city ->
-            CityItem(city = city, onClose = {
-                viewModel.remove(city)
-                Toast.makeText(context, "${city.name} fechado", Toast.LENGTH_SHORT).show()
-            }, onClick = {
-                Toast.makeText(context, "Clicou em ${city.name}", Toast.LENGTH_SHORT).show()
-            })
+            if (city.weather == null) {
+                viewModel.loadWeather(city) // Dispara a carga do clima se ainda
+            //// não estiver carregado
+            }
+
+            CityItem(
+                city = city,
+                onClose = {
+                    viewModel.remove(city)
+                    Toast.makeText(context, "${city.name} removido", Toast.LENGTH_SHORT).show()
+                },
+                onClick = {
+                    Toast.makeText(context, "Clicou em ${city.name}", Toast.LENGTH_SHORT).show()
+                }
+            )
         }
     }
 }
@@ -72,18 +82,12 @@ fun CityItem(
                 fontSize = 24.sp
             )
             Text(
-                text = city.weather ?: "Carregando clima...",
+                text = city.weather?.desc ?: "Carregando clima...",
                 fontSize = 16.sp
             )
         }
         IconButton(onClick = onClose) {
-            Icon(Icons.Filled.Close, contentDescription = "Close")
+            Icon(Icons.Filled.Close, contentDescription = "Fechar")
         }
     }
 }
-
-/*@Preview(showBackground = true)
-@Composable
-fun PreviewListPage() {
-    ListPage(viewModel = MainViewModel())
-}*/

@@ -11,7 +11,7 @@ class FBDatabase {
     interface Listener {
         fun onUserLoaded(user: User)
         fun onCityAdded(city: City)
-        fun onCityUpdate(city: City)
+        fun onCityUpdated(city: City)
         fun onCityRemoved(city: City)
     }
 
@@ -41,7 +41,7 @@ class FBDatabase {
                     when (change.type) {
                         DocumentChange.Type.ADDED -> listener?.onCityAdded(fbCity.toCity())
                         DocumentChange.Type.REMOVED -> listener?.onCityRemoved(fbCity.toCity())
-                        DocumentChange.Type.MODIFIED -> listener?.onCityUpdate(fbCity.toCity())
+                        DocumentChange.Type.MODIFIED -> listener?.onCityUpdated(fbCity.toCity())
                     }
                 }
             }
