@@ -20,6 +20,7 @@ import androidx.core.content.PermissionChecker
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import com.weatherapp.api.WeatherService
 import com.weatherapp.fb.FBDatabase
 import com.weatherapp.model.MainViewModel
 import com.weatherapp.model.MainViewModelFactory
@@ -35,7 +36,11 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContent {
             val fbDB = remember { FBDatabase() }
-            val viewModel: MainViewModel = viewModel(factory = MainViewModelFactory(fbDB))
+            val weatherService = remember { WeatherService() }
+            val viewModel : MainViewModel = viewModel(
+                factory = MainViewModelFactory(fbDB, weatherService)
+            )
+
             val navController = rememberNavController()
             val currentRoute = navController.currentBackStackEntryAsState()
             val showButton = currentRoute.value?.destination?.route == "list"
