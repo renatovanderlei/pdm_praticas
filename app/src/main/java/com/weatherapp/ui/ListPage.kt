@@ -43,15 +43,16 @@ fun ListPage(
             //// não estiver carregado
             }
 
-            CityItem(
-                city = city,
+            CityItem(city = city, onClick= {
+                viewModel.city = city
+            },
                 onClose = {
                     viewModel.remove(city)
                     Toast.makeText(context, "${city.name} removido", Toast.LENGTH_SHORT).show()
                 },
-                onClick = {
-                    Toast.makeText(context, "Clicou em ${city.name}", Toast.LENGTH_SHORT).show()
-                }
+                //onClick = {
+                  //  Toast.makeText(context, "Clicou em ${city.name}", Toast.LENGTH_SHORT).show()
+                //}
             )
         }
     }
