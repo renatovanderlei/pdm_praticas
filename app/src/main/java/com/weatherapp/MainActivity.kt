@@ -28,7 +28,9 @@ import com.weatherapp.ui.CityDialog
 import com.weatherapp.ui.nav.BottomNavBar
 import com.weatherapp.ui.nav.BottomNavItem
 import com.weatherapp.ui.nav.MainNavHost
+import com.weatherapp.ui.nav.Route
 import com.weatherapp.ui.theme.WeatherAppTheme
+import androidx.navigation.NavDestination.Companion.hasRoute
 
 class MainActivity : ComponentActivity() {
     @OptIn(ExperimentalMaterial3Api::class)
@@ -37,13 +39,13 @@ class MainActivity : ComponentActivity() {
         setContent {
             val fbDB = remember { FBDatabase() }
             val weatherService = remember { WeatherService() }
-            val viewModel : MainViewModel = viewModel(
+            val viewModel: MainViewModel = viewModel(
                 factory = MainViewModelFactory(fbDB, weatherService)
             )
 
             val navController = rememberNavController()
             val currentRoute = navController.currentBackStackEntryAsState()
-            val showButton = currentRoute.value?.destination?.route == "list"
+            val showButton = currentRoute.value?.destination?.hasRoute(Route.List::class)?:false
             var showDialog by remember { mutableStateOf(false) }
 
             val launcher = rememberLauncherForActivityResult(
@@ -99,7 +101,7 @@ class MainActivity : ComponentActivity() {
                             BottomNavItem.ListButton,
                             BottomNavItem.MapButton
                         )
-                        BottomNavBar(navController = navController, items)
+                        BottomNavBar(viewModel, items)
                     },
                     floatingActionButton = {
                         if (showButton) {
@@ -111,6 +113,18 @@ class MainActivity : ComponentActivity() {
                 ) { innerPadding ->
                     Box(modifier = Modifier.padding(innerPadding)) {
                         MainNavHost(navController = navController, viewModel = viewModel)
+                    }
+                    LaunchedEffect(viewModel.page) {
+                        navController.navigate(viewModel.page) {
+                            // Volta pilha de navegação até HomePage (startDest).
+                            navController.graph.startDestinationRoute?.let {
+                                popUpTo(it) {
+                                    saveState = true
+                                }
+                                restoreState = true
+                            }
+                            launchSingleTop = true
+                        }
                     }
                 }
             }

@@ -7,10 +7,16 @@ import androidx.lifecycle.ViewModelProvider
 import com.google.android.gms.maps.model.LatLng
 import com.weatherapp.api.WeatherService
 import com.weatherapp.fb.FBDatabase
+import com.weatherapp.ui.nav.Route
 
 class MainViewModel (private val db: FBDatabase,
                      private val service: WeatherService) : ViewModel(),
     FBDatabase.Listener {
+
+    private var _page = mutableStateOf<Route>(Route.Home)
+    var page: Route
+        get() = _page.value
+        set(tmp) { _page.value = tmp }
 
     private val _cities = mutableStateMapOf<String, City>()
     val cities: List<City>

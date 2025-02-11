@@ -5,7 +5,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountBox
 import androidx.compose.material.icons.filled.LocationOn
@@ -23,14 +22,17 @@ import androidx.compose.ui.unit.sp
 import com.weatherapp.R
 import com.weatherapp.model.Forecast
 import com.weatherapp.model.MainViewModel
+import androidx.compose.foundation.lazy.items
 
 @Composable
 fun HomePage(viewModel: MainViewModel) {
     Column {
         if (viewModel.city == null) {
-            Column(  modifier = Modifier.fillMaxSize()
-                .background(colorResource(id = R.color.teal_700))
-                .wrapContentSize(Alignment.Center)) {
+            Column(
+                modifier = Modifier.fillMaxSize()
+                    .background(colorResource(id = R.color.teal_700))
+                    .wrapContentSize(Alignment.Center)
+            ) {
                 Text(
                     text = "Selecione uma cidade na lista de favoritas.",
                     fontWeight = FontWeight.Bold, color = Color.White,
@@ -40,29 +42,38 @@ fun HomePage(viewModel: MainViewModel) {
             }
             return
         }
-    }
-    Row {
-        Icon( imageVector = Icons.Filled.AccountBox,
-            contentDescription = "Localized description",
-            modifier = Modifier.size(150.dp) )
-        Column {
-            Spacer(modifier = Modifier.size(12.dp))
-            Text(text = viewModel.city?.name?:"Selecione uma cidade...",
-                fontSize = 28.sp)
-            Spacer(modifier = Modifier.size(12.dp))
-            Text(text = viewModel.city?.weather?.desc?:"...",
-                fontSize = 22.sp)
-            Spacer(modifier = Modifier.size(12.dp))
-            Text(text = "Temp: " + viewModel.city?.weather?.temp + "℃",
-                fontSize = 22.sp)
+
+        Row {
+            Icon(
+                imageVector = Icons.Filled.AccountBox,
+                contentDescription = "Localized description",
+                modifier = Modifier.size(150.dp)
+            )
+            Column {
+                Spacer(modifier = Modifier.size(12.dp))
+                Text(
+                    text = viewModel.city?.name ?: "Selecione uma cidade...",
+                    fontSize = 28.sp
+                )
+                Spacer(modifier = Modifier.size(12.dp))
+                Text(
+                    text = viewModel.city?.weather?.desc ?: "...",
+                    fontSize = 22.sp
+                )
+                Spacer(modifier = Modifier.size(12.dp))
+                Text(
+                    text = "Temp: " + viewModel.city?.weather?.temp + "℃",
+                    fontSize = 22.sp
+                )
+            }
         }
-    }
-    if (viewModel.city!!.forecast == null) {
-        viewModel.loadForecast(viewModel.city!!);  return
-    }
-    LazyColumn {
-        items(viewModel.city!!.forecast!!) { forecast ->
-            ForecastItem(forecast, onClick = { })
+        if (viewModel.city!!.forecast == null) {
+            viewModel.loadForecast(viewModel.city!!); return
+        }
+        LazyColumn {
+            items(viewModel.city!!.forecast!!) { forecast ->
+                ForecastItem(forecast, onClick = { })
+            }
         }
     }
 }

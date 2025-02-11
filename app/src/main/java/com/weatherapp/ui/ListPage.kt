@@ -1,11 +1,9 @@
 package com.weatherapp.ui
 
 import android.widget.Toast
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.rounded.FavoriteBorder
@@ -16,17 +14,16 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.weatherapp.model.City
 import com.weatherapp.model.MainViewModel
+import androidx.compose.foundation.lazy.items
+import com.weatherapp.ui.nav.Route
 
 @Composable
 fun ListPage(
-    viewModel: MainViewModel,
-    modifier: Modifier = Modifier
+    viewModel: MainViewModel, modifier: Modifier = Modifier,
 ) {
     val cityList = viewModel.cities
     val context = LocalContext.current
@@ -36,24 +33,18 @@ fun ListPage(
             .fillMaxSize()
             .padding(8.dp)
     ) {
-        //
         items(cityList) { city ->
             if (city.weather == null) {
-                viewModel.loadWeather(city) // Dispara a carga do clima se ainda
-            //// não estiver carregado
+                viewModel.loadWeather(city)
             }
 
-            CityItem(city = city, onClick= {
+            CityItem(city = city, onClick = {
                 viewModel.city = city
-            },
-                onClose = {
-                    viewModel.remove(city)
-                    Toast.makeText(context, "${city.name} removido", Toast.LENGTH_SHORT).show()
-                },
-                //onClick = {
-                  //  Toast.makeText(context, "Clicou em ${city.name}", Toast.LENGTH_SHORT).show()
-                //}
-            )
+                viewModel.page = Route.Home
+            }, onClose = {
+                viewModel.remove(city)
+                Toast.makeText(context, "${city.name} removido", Toast.LENGTH_SHORT).show()
+            })
         }
     }
 }
