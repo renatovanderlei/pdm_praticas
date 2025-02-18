@@ -81,4 +81,7 @@ dependencies {
     implementation("com.google.maps.android:maps-compose:2.8.0")
     implementation ("com.squareup.retrofit2:retrofit:2.9.0")
     implementation ("com.squareup.retrofit2:converter-gson:2.9.0")
+    //images
+    implementation("io.coil-kt:coil-compose:2.5.0") // coil
+    implementation("com.squareup.picasso:picasso:2.71828") // Picasso
 }

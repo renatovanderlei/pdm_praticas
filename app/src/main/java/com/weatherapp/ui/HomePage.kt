@@ -5,10 +5,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AccountBox
-import androidx.compose.material.icons.filled.LocationOn
-import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -23,6 +19,8 @@ import com.weatherapp.R
 import com.weatherapp.model.Forecast
 import com.weatherapp.model.MainViewModel
 import androidx.compose.foundation.lazy.items
+import androidx.compose.ui.res.painterResource
+import coil.compose.AsyncImage
 
 @Composable
 fun HomePage(viewModel: MainViewModel) {
@@ -44,10 +42,11 @@ fun HomePage(viewModel: MainViewModel) {
         }
 
         Row {
-            Icon(
-                imageVector = Icons.Filled.AccountBox,
-                contentDescription = "Localized description",
-                modifier = Modifier.size(150.dp)
+            AsyncImage( // Substitui o Icon
+                model = viewModel.city?.weather?.imgUrl,
+                modifier = Modifier.size(100.dp),
+                error = painterResource(id = R.drawable.loading),
+                contentDescription = "Imagem"
             )
             Column {
                 Spacer(modifier = Modifier.size(12.dp))
@@ -96,11 +95,13 @@ fun ForecastItem(
             .clickable { onClick(forecast) },
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Icon(
-            imageVector = Icons.Filled.LocationOn,
-            contentDescription = "Localização",
-            modifier = Modifier.size(48.dp)
+        AsyncImage( // Substitui o Icon
+            model = forecast.imgUrl,
+            modifier = Modifier.size(40.dp),
+            error = painterResource(id = R.drawable.loading),
+            contentDescription = "Imagem"
         )
+
         Spacer(modifier = Modifier.size(16.dp))
         Column {
             Text(text = forecast.weather, fontSize = 24.sp)

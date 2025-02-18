@@ -19,7 +19,11 @@ import androidx.compose.ui.unit.sp
 import com.weatherapp.model.City
 import com.weatherapp.model.MainViewModel
 import androidx.compose.foundation.lazy.items
+import androidx.compose.ui.res.painterResource
+import coil.compose.AsyncImage
 import com.weatherapp.ui.nav.Route
+import com.weatherapp.R
+
 
 @Composable
 fun ListPage(
@@ -63,10 +67,12 @@ fun CityItem(
             .clickable { onClick() },
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Icon(
-            Icons.Rounded.FavoriteBorder,
-            contentDescription = ""
-        )
+        AsyncImage(
+                model = city.weather?.imgUrl,
+                modifier = Modifier.size(75.dp),
+                error = painterResource(id = R.drawable.loading),
+                contentDescription = "loading"
+            )
         Spacer(modifier = Modifier.size(12.dp))
         Column(modifier = modifier.weight(1f)) {
             Text(
