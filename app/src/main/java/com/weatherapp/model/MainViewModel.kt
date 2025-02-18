@@ -107,6 +107,13 @@ class MainViewModel (private val db: FBDatabase,
             _cities[city.name] = city.copy()
         }
     }
+
+    fun loadBitmap(city: City) {
+        service.getBitmap(city.weather!!.imgUrl) { bitmap ->
+            city.weather!!.bitmap = bitmap
+            onCityUpdated(city)
+        }
+    }
 }
 
 class MainViewModelFactory(private val db: FBDatabase,
@@ -119,3 +126,4 @@ class MainViewModelFactory(private val db: FBDatabase,
         throw IllegalArgumentException("Unknown ViewModel class")
     }
 }
+
