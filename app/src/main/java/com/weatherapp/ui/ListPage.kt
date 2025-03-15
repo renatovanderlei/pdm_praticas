@@ -19,6 +19,8 @@ import androidx.compose.ui.unit.sp
 import com.weatherapp.model.City
 import com.weatherapp.model.MainViewModel
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.filled.Notifications
+import androidx.compose.material.icons.outlined.Notifications
 import androidx.compose.ui.res.painterResource
 import coil.compose.AsyncImage
 import com.weatherapp.ui.nav.Route
@@ -60,32 +62,40 @@ fun CityItem(
     onClose: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    Row(
+    Column(
         modifier = modifier
             .fillMaxWidth()
             .padding(8.dp)
-            .clickable { onClick() },
-        verticalAlignment = Alignment.CenterVertically
+            .clickable { onClick() }
     ) {
-        AsyncImage(
-                model = city.weather?.imgUrl,
-                modifier = Modifier.size(75.dp),
-                error = painterResource(id = R.drawable.loading),
-                contentDescription = "loading"
-            )
-        Spacer(modifier = Modifier.size(12.dp))
-        Column(modifier = modifier.weight(1f)) {
-            Text(
-                text = city.name,
-                fontSize = 24.sp
-            )
-            Text(
-                text = city.weather?.desc ?: "Carregando clima...",
-                fontSize = 16.sp
-            )
-        }
-        IconButton(onClick = onClose) {
-            Icon(Icons.Filled.Close, contentDescription = "Fechar")
+        // Ícone de notificação (adicionado acima do nome da cidade)
+        Icon(
+            imageVector = if (city.isMonitored) Icons.Filled.Notifications else Icons.Outlined.Notifications,
+            contentDescription = "Monitorada?",
+            modifier = Modifier
+                .size(32.dp) // Tamanho ajustado
+                .align(Alignment.CenterHorizontally) // Centralizado horizontalmente
+        )
+
+        Spacer(modifier = Modifier.size(8.dp)) // Espaçamento entre o ícone e o texto
+
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Column(modifier = modifier.weight(1f)) {
+                Text(
+                    text = city.name,
+                    fontSize = 24.sp
+                )
+                Text(
+                    text = city.weather?.desc ?: "Carregando clima...",
+                    fontSize = 16.sp
+                )
+            }
+            IconButton(onClick = onClose) {
+                Icon(Icons.Filled.Close, contentDescription = "Fechar")
+            }
         }
     }
 }

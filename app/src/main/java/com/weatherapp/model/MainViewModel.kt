@@ -8,10 +8,12 @@ import com.google.android.gms.maps.model.LatLng
 import com.weatherapp.api.WeatherService
 import com.weatherapp.fb.FBDatabase
 import com.weatherapp.ui.nav.Route
+import kotlin.random.Random
 
-class MainViewModel (private val db: FBDatabase,
-                     private val service: WeatherService) : ViewModel(),
-    FBDatabase.Listener {
+class MainViewModel(
+    private val db: FBDatabase,
+    private val service: WeatherService
+) : ViewModel(), FBDatabase.Listener {
 
     private var _page = mutableStateOf<Route>(Route.Home)
     var page: Route
@@ -29,7 +31,9 @@ class MainViewModel (private val db: FBDatabase,
     private var _city = mutableStateOf<City?>(null)
     var city: City?
         get() = _city.value
-        set(tmp) { _city.value = tmp?.copy() }
+        set(tmp) {
+            _city.value = tmp?.copy(salt = Random.nextLong())
+        }
 
     init {
         db.setListener(this)
@@ -81,7 +85,7 @@ class MainViewModel (private val db: FBDatabase,
 
     fun loadWeather(city: City) {
         service.getCurrentWeather(city.name) { apiWeather ->
-            city.weather = Weather (
+            city.weather = Weather(
                 date = apiWeather?.current?.last_updated ?: "...",
                 desc = apiWeather?.current?.condition?.text ?: "...",
                 temp = apiWeather?.current?.temp_c ?: -1.0,
@@ -92,14 +96,14 @@ class MainViewModel (private val db: FBDatabase,
         }
     }
 
-    fun loadForecast(city : City) {
+    fun loadForecast(city: City) {
         service.getForecast(city.name) { result ->
             city.forecast = result?.forecast?.forecastday?.map {
                 Forecast(
-                    date = it.date?:"00-00-0000",
-                    weather = it.day?.condition?.text?:"Erro carregando!",
-                    tempMin = it.day?.mintemp_c?:-1.0,
-                    tempMax = it.day?.maxtemp_c?:-1.0,
+                    date = it.date ?: "00-00-0000",
+                    weather = it.day?.condition?.text ?: "Erro carregando!",
+                    tempMin = it.day?.mintemp_c ?: -1.0,
+                    tempMax = it.day?.maxtemp_c ?: -1.0,
                     imgUrl = ("https:" + it.day?.condition?.icon)
                 )
             }
@@ -114,11 +118,20 @@ class MainViewModel (private val db: FBDatabase,
             onCityUpdated(city)
         }
     }
+
+    fun update(city: City) {
+        db.update(city)
+    }
+
+    override fun onUserSigOut(city: City) {
+        _cities.remove(city.name) // Remove a cidade fornecida da lista
+    }
 }
 
-class MainViewModelFactory(private val db: FBDatabase,
-                           private val service: WeatherService) :
-    ViewModelProvider.Factory {
+class MainViewModelFactory(
+    private val db: FBDatabase,
+    private val service: WeatherService
+) : ViewModelProvider.Factory {
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         if (modelClass.isAssignableFrom(MainViewModel::class.java)) {
             return MainViewModel(db, service) as T
@@ -126,4 +139,3 @@ class MainViewModelFactory(private val db: FBDatabase,
         throw IllegalArgumentException("Unknown ViewModel class")
     }
 }
-

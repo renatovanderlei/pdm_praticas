@@ -13,6 +13,7 @@ class FBDatabase {
         fun onCityAdded(city: City)
         fun onCityUpdated(city: City)
         fun onCityRemoved(city: City)
+        fun onUserSigOut(city: City)
     }
 
     private val auth = FirebaseAuth.getInstance()
@@ -39,9 +40,12 @@ class FBDatabase {
                 snapshots?.documentChanges?.forEach { change ->
                     val fbCity = change.document.toObject(FBCity::class.java)
                     when (change.type) {
-                        DocumentChange.Type.ADDED -> listener?.onCityAdded(fbCity.toCity())
-                        DocumentChange.Type.REMOVED -> listener?.onCityRemoved(fbCity.toCity())
-                        DocumentChange.Type.MODIFIED -> listener?.onCityUpdated(fbCity.toCity())
+                        DocumentChange.Type.ADDED ->
+                            listener?.onCityAdded(fbCity.toCity())
+                        DocumentChange.Type.MODIFIED ->
+                            listener?.onCityUpdated(fbCity.toCity())
+                        DocumentChange.Type.REMOVED ->
+                            listener?.onCityRemoved(fbCity.toCity())
                     }
                 }
             }
@@ -65,6 +69,25 @@ class FBDatabase {
         val uid = auth.currentUser!!.uid
         db.collection("users").document(uid).collection("cities")
             .document(city.name).set(city.toFBCity())
+    }
+
+    fun update(city: City) {
+        if (auth.currentUser == null) throw RuntimeException("Not logged in!")
+        val uid = auth.currentUser!!.uid
+        val fbCity = city.toFBCity()
+        val changes = mapOf(
+            "monitored" to fbCity.monitored // Atualiza apenas o campo "monitored"
+        )
+        db.collection("users").document(uid)
+            .collection("cities").document(fbCity.name!!).update(changes)
+            .addOnSuccessListener {
+                // Notifica o listener que a cidade foi atualizada
+                listener?.onCityUpdated(city)
+            }
+            .addOnFailureListener { e ->
+                // Trate o erro conforme necessário
+                throw RuntimeException("Failed to update city: ${e.message}")
+            }
     }
 
     fun remove(city: City) {

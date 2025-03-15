@@ -19,6 +19,12 @@ import com.weatherapp.R
 import com.weatherapp.model.Forecast
 import com.weatherapp.model.MainViewModel
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Notifications
+import androidx.compose.material.icons.outlined.Notifications
+import androidx.compose.material.icons.rounded.FavoriteBorder
+import androidx.compose.material3.Icon
 import androidx.compose.ui.res.painterResource
 import coil.compose.AsyncImage
 
@@ -41,34 +47,59 @@ fun HomePage(viewModel: MainViewModel) {
             return
         }
 
+        // Carregar o weather se for nulo
+        if (viewModel.city!!.weather == null) {
+            viewModel.loadWeather(viewModel.city!!)
+        }
+
         Row {
-            AsyncImage( // Substitui o Icon
-                model = viewModel.city?.weather?.imgUrl,
+            AsyncImage(
+                model = viewModel.city!!.weather!!.imgUrl,
                 modifier = Modifier.size(100.dp),
                 error = painterResource(id = R.drawable.loading),
                 contentDescription = "Imagem"
             )
             Column {
                 Spacer(modifier = Modifier.size(12.dp))
-                Text(
-                    text = viewModel.city?.name ?: "Selecione uma cidade...",
-                    fontSize = 28.sp
-                )
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(
+                        text = viewModel.city!!.name,
+                        fontSize = 28.sp,
+                        modifier = Modifier.weight(1f) // Ocupa o espaço restante
+                    )
+                    // Ícone de notificação (monitoramento)
+                    Icon(
+                        imageVector = if (viewModel.city!!.isMonitored) Icons.Filled.Notifications else Icons.Outlined.Notifications,
+                        contentDescription = "Monitorada?",
+                        modifier = Modifier
+                            .size(32.dp)
+                            .clickable(enabled = viewModel.city != null) {
+                                // Alterna o estado de monitoramento
+                                val updatedCity = viewModel.city!!.copy(isMonitored = !viewModel.city!!.isMonitored)
+                                viewModel.update(updatedCity)
+                            }
+                    )
+                }
                 Spacer(modifier = Modifier.size(12.dp))
                 Text(
-                    text = viewModel.city?.weather?.desc ?: "...",
+                    text = viewModel.city!!.weather!!.desc ?: "...",
                     fontSize = 22.sp
                 )
                 Spacer(modifier = Modifier.size(12.dp))
                 Text(
-                    text = "Temp: " + viewModel.city?.weather?.temp + "℃",
+                    text = "Temp: ${viewModel.city!!.weather!!.temp}℃",
                     fontSize = 22.sp
                 )
             }
         }
+
+        // Carregar o forecast se for nulo
         if (viewModel.city!!.forecast == null) {
-            viewModel.loadForecast(viewModel.city!!); return
+            viewModel.loadForecast(viewModel.city!!)
+            return
         }
+
+        // Renderiza a lista de previsões
         LazyColumn {
             items(viewModel.city!!.forecast!!) { forecast ->
                 ForecastItem(forecast, onClick = { })
@@ -111,4 +142,6 @@ fun ForecastItem(
             Text(text = "Max: $tempMax℃", fontSize = 16.sp)
         }
     }
+
+
 }
