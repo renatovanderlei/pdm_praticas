@@ -62,40 +62,39 @@ fun CityItem(
     onClose: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    Column(
+    Row(
         modifier = modifier
             .fillMaxWidth()
             .padding(8.dp)
-            .clickable { onClick() }
+            .clickable { onClick() },
+        verticalAlignment = Alignment.CenterVertically // Centraliza os elementos verticalmente
     ) {
-        // Ícone de notificação (adicionado acima do nome da cidade)
+        // Coluna para o nome da cidade e a descrição do clima
+        Column(
+            modifier = Modifier.weight(1f) // Ocupa o espaço restante
+        ) {
+            Text(
+                text = city.name,
+                fontSize = 24.sp
+            )
+            Text(
+                text = city.weather?.desc ?: "Carregando clima...",
+                fontSize = 16.sp
+            )
+        }
+
+        // Ícone de notificação
         Icon(
             imageVector = if (city.isMonitored) Icons.Filled.Notifications else Icons.Outlined.Notifications,
             contentDescription = "Monitorada?",
             modifier = Modifier
                 .size(32.dp) // Tamanho ajustado
-                .align(Alignment.CenterHorizontally) // Centralizado horizontalmente
+                .padding(end = 8.dp) // Espaçamento entre os ícones
         )
 
-        Spacer(modifier = Modifier.size(8.dp)) // Espaçamento entre o ícone e o texto
-
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Column(modifier = modifier.weight(1f)) {
-                Text(
-                    text = city.name,
-                    fontSize = 24.sp
-                )
-                Text(
-                    text = city.weather?.desc ?: "Carregando clima...",
-                    fontSize = 16.sp
-                )
-            }
-            IconButton(onClick = onClose) {
-                Icon(Icons.Filled.Close, contentDescription = "Fechar")
-            }
+        // Ícone de fechar
+        IconButton(onClick = onClose) {
+            Icon(Icons.Filled.Close, contentDescription = "Fechar")
         }
     }
 }

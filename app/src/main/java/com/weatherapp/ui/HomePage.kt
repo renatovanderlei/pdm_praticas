@@ -50,11 +50,12 @@ fun HomePage(viewModel: MainViewModel) {
         // Carregar o weather se for nulo
         if (viewModel.city!!.weather == null) {
             viewModel.loadWeather(viewModel.city!!)
+            return
         }
 
         Row {
             AsyncImage(
-                model = viewModel.city!!.weather!!.imgUrl,
+                model = viewModel.city!!.weather?.imgUrl,
                 modifier = Modifier.size(100.dp),
                 error = painterResource(id = R.drawable.loading),
                 contentDescription = "Imagem"
@@ -75,7 +76,8 @@ fun HomePage(viewModel: MainViewModel) {
                             .size(32.dp)
                             .clickable(enabled = viewModel.city != null) {
                                 // Alterna o estado de monitoramento
-                                val updatedCity = viewModel.city!!.copy(isMonitored = !viewModel.city!!.isMonitored)
+                                val updatedCity =
+                                    viewModel.city!!.copy(isMonitored = !viewModel.city!!.isMonitored)
                                 viewModel.update(updatedCity)
                             }
                     )
@@ -100,14 +102,15 @@ fun HomePage(viewModel: MainViewModel) {
         }
 
         // Renderiza a lista de previsões
-        LazyColumn {
-            items(viewModel.city!!.forecast!!) { forecast ->
-                ForecastItem(forecast, onClick = { })
+        viewModel.city!!.forecast?.let { list ->
+            LazyColumn {
+                items(list) { forecast ->
+                    ForecastItem(forecast, onClick = { })
+                }
             }
         }
     }
 }
-
 
 @Composable
 fun ForecastItem(
