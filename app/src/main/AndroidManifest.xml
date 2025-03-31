@@ -42,7 +42,6 @@
         <meta-data
             android:name="com.google.firebase.auth.api.gms.config"
             android:value="default" />
-
     </application>
 
 </manifest>
