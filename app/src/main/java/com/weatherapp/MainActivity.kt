@@ -1,6 +1,7 @@
 package com.weatherapp
 
 import android.Manifest
+import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -17,13 +18,13 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.core.content.ContextCompat
 import androidx.core.content.PermissionChecker
+import androidx.core.util.Consumer
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.weatherapp.api.WeatherService
 import com.weatherapp.fb.FBDatabase
 import com.weatherapp.model.MainViewModel
-import com.weatherapp.model.MainViewModelFactory
 import com.weatherapp.ui.CityDialog
 import com.weatherapp.ui.nav.BottomNavBar
 import com.weatherapp.ui.nav.BottomNavItem
@@ -31,6 +32,19 @@ import com.weatherapp.ui.nav.MainNavHost
 import com.weatherapp.ui.nav.Route
 import com.weatherapp.ui.theme.WeatherAppTheme
 import androidx.navigation.NavDestination.Companion.hasRoute
+import com.weatherapp.monitor.ForecastMonitor
+
+//class MainActivity : ComponentActivity() {
+//    @OptIn(ExperimentalMaterial3Api::class)
+//    override fun onCreate(savedInstanceState: Bundle?) {
+//        super.onCreate(savedInstanceState)
+//        setContent {
+//            val fbDB = remember { FBDatabase() }
+//            val weatherService = remember { WeatherService() }
+//            val forecastMonitor = remember { ForecastMonitor(this@MainActivity) }
+//            val viewModel: MainViewModel = viewModel(
+//                factory = MainViewModelFactory(fbDB, weatherService)
+//            )
 
 class MainActivity : ComponentActivity() {
     @OptIn(ExperimentalMaterial3Api::class)
@@ -39,20 +53,38 @@ class MainActivity : ComponentActivity() {
         setContent {
             val fbDB = remember { FBDatabase() }
             val weatherService = remember { WeatherService() }
+
             val viewModel: MainViewModel = viewModel(
-                factory = MainViewModelFactory(fbDB, weatherService)
+                factory = MainViewModel.MainViewModelFactory(
+                    db = fbDB,
+                    service = weatherService,
+                    context = this@MainActivity
+                )
             )
+
+            // Intent handler for notifications - properly indented
+            DisposableEffect(Unit) {
+                val listener = Consumer<Intent> { intent ->
+                    val name = intent.getStringExtra("city")
+                    val city = viewModel.cities.find { it.name == name }
+                    viewModel.city = city
+                    viewModel.page = Route.Home
+                }
+                addOnNewIntentListener(listener)
+                onDispose { removeOnNewIntentListener(listener) }
+            }
 
             val navController = rememberNavController()
             val currentRoute = navController.currentBackStackEntryAsState()
-            val showButton = currentRoute.value?.destination?.hasRoute(Route.List::class)?:false
+            val showButton = currentRoute.value?.destination?.hasRoute(Route.List::class) ?: false
             var showDialog by remember { mutableStateOf(false) }
 
+            // Rest of your code remains the same...
             val launcher = rememberLauncherForActivityResult(
                 contract = ActivityResultContracts.RequestPermission(),
                 onResult = { granted ->
                     if (!granted) {
-                        // Permissão negada, lidar conforme necessário
+                        // Handle permission denial
                     }
                 }
             )

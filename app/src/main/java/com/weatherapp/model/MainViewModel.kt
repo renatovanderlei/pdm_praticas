@@ -1,5 +1,6 @@
 package com.weatherapp.model
 
+import android.content.Context
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.lifecycle.ViewModel
@@ -7,12 +8,14 @@ import androidx.lifecycle.ViewModelProvider
 import com.google.android.gms.maps.model.LatLng
 import com.weatherapp.api.WeatherService
 import com.weatherapp.fb.FBDatabase
+import com.weatherapp.monitor.ForecastMonitor
 import com.weatherapp.ui.nav.Route
 import kotlin.random.Random
 
 class MainViewModel(
     private val db: FBDatabase,
-    private val service: WeatherService
+    private val service: WeatherService,
+    private val monitor: ForecastMonitor
 ) : ViewModel(), FBDatabase.Listener {
 
     private var _page = mutableStateOf<Route>(Route.Home)
@@ -39,6 +42,19 @@ class MainViewModel(
         db.setListener(this)
     }
 
+    private fun refresh(city: City) {
+        val copy = city.copy(
+            salt = Random.nextLong(),
+            weather = city.weather?:_cities[city.name]?.weather,
+            forecast = city.forecast?:_cities[city.name]?.forecast
+        )
+
+    if (_city.value?.name == city.name)  _city.value = copy
+    _cities.remove(city.name)
+    _cities[city.name] = copy
+    }
+
+
     fun remove(city: City) {
         db.remove(city)
     }
@@ -53,18 +69,26 @@ class MainViewModel(
 
     override fun onCityAdded(city: City) {
         _cities[city.name] = city
+        if (city.isMonitored) {
+            monitor.updateCity(city)
+        }
     }
 
     override fun onCityUpdated(city: City) {
-        _cities.remove(city.name)
-        _cities[city.name] = city.copy()
-        if (_city.value?.name == city.name) {
-            _city.value = city.copy()
+        refresh(city)
+        if (city.isMonitored) {
+            monitor.updateCity(city) // Atualiza worker se monitorado
+        } else {
+            monitor.cancelCity(city) // Cancela worker se não monitorado
         }
     }
 
     override fun onCityRemoved(city: City) {
         _cities.remove(city.name)
+        monitor.cancelCity(city) // Cancela worker e notificações
+        if (_city.value?.name == city.name) {
+            _city.value = null // Limpa cidade selecionada se for a removida
+        }
     }
 
     fun add(name: String) {
@@ -91,8 +115,7 @@ class MainViewModel(
                 temp = apiWeather?.current?.temp_c ?: -1.0,
                 imgUrl = "https:" + apiWeather?.current?.condition?.icon
             )
-            _cities.remove(city.name)
-            _cities[city.name] = city.copy()
+            refresh(city)
         }
     }
 
@@ -107,35 +130,43 @@ class MainViewModel(
                     imgUrl = ("https:" + it.day?.condition?.icon)
                 )
             }
-            _cities.remove(city.name)
-            _cities[city.name] = city.copy()
+            refresh(city)
         }
     }
 
     fun loadBitmap(city: City) {
         service.getBitmap(city.weather!!.imgUrl) { bitmap ->
             city.weather!!.bitmap = bitmap
-            onCityUpdated(city)
+            refresh(city)
         }
     }
 
     fun update(city: City) {
         db.update(city)
-    }
-
-    override fun onUserSigOut(city: City) {
-        _cities.remove(city.name) // Remove a cidade fornecida da lista
-    }
-}
-
-class MainViewModelFactory(
-    private val db: FBDatabase,
-    private val service: WeatherService
-) : ViewModelProvider.Factory {
-    override fun <T : ViewModel> create(modelClass: Class<T>): T {
-        if (modelClass.isAssignableFrom(MainViewModel::class.java)) {
-            return MainViewModel(db, service) as T
+        if (city.isMonitored) {
+            monitor.updateCity(city)
+        } else {
+            monitor.cancelCity(city)
         }
-        throw IllegalArgumentException("Unknown ViewModel class")
+    }
+
+    override fun onUserSigOut() {
+        _cities.clear()
+        monitor.cancelAll()  // Cancela TODOS os workers e notificações
+        _city.value = null   // Limpa a cidade selecionada
+    }
+
+    class MainViewModelFactory(
+        private val db: FBDatabase,
+        private val service: WeatherService,
+        private val context: Context
+    ) : ViewModelProvider.Factory {
+        override fun <T : ViewModel> create(modelClass: Class<T>): T {
+            if (modelClass.isAssignableFrom(MainViewModel::class.java)) {
+                val monitor = ForecastMonitor(context)
+                return MainViewModel(db, service, monitor) as T
+            }
+            throw IllegalArgumentException("Unknown ViewModel class")
+        }
     }
 }

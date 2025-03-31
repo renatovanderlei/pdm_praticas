@@ -27,9 +27,14 @@ import androidx.compose.material.icons.rounded.FavoriteBorder
 import androidx.compose.material3.Icon
 import androidx.compose.ui.res.painterResource
 import coil.compose.AsyncImage
+import com.weatherapp.ui.nav.BottomNavItem.HomeButton.icon
+
 
 @Composable
 fun HomePage(viewModel: MainViewModel) {
+    val isMonitored = viewModel.city?.isMonitored ?: false
+    val icon = if (isMonitored) Icons.Filled.Notifications else Icons.Outlined.Notifications
+
     Column {
         if (viewModel.city == null) {
             Column(
@@ -47,47 +52,52 @@ fun HomePage(viewModel: MainViewModel) {
             return
         }
 
-        // Carregar o weather se for nulo
         if (viewModel.city!!.weather == null) {
             viewModel.loadWeather(viewModel.city!!)
             return
         }
 
-        Row {
+        // Cabeçalho com informações da cidade
+        Row(
+            modifier = Modifier.padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
             AsyncImage(
                 model = viewModel.city!!.weather?.imgUrl,
                 modifier = Modifier.size(100.dp),
                 error = painterResource(id = R.drawable.loading),
                 contentDescription = "Imagem"
             )
-            Column {
-                Spacer(modifier = Modifier.size(12.dp))
-                Row(verticalAlignment = Alignment.CenterVertically) {
+
+            Column(
+                modifier = Modifier.padding(start = 16.dp)
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
                     Text(
                         text = viewModel.city!!.name,
                         fontSize = 28.sp,
-                        modifier = Modifier.weight(1f) // Ocupa o espaço restante
+                        modifier = Modifier.weight(1f)
                     )
-                    // Ícone de notificação (monitoramento)
                     Icon(
-                        imageVector = if (viewModel.city!!.isMonitored) Icons.Filled.Notifications else Icons.Outlined.Notifications,
+                        imageVector = icon,
                         contentDescription = "Monitorada?",
-                        modifier = Modifier
-                            .size(32.dp)
+                        modifier = Modifier.size(32.dp)
                             .clickable(enabled = viewModel.city != null) {
-                                // Alterna o estado de monitoramento
-                                val updatedCity =
-                                    viewModel.city!!.copy(isMonitored = !viewModel.city!!.isMonitored)
-                                viewModel.update(updatedCity)
+                                viewModel.update(
+                                    viewModel.city!!
+                                        .copy(isMonitored = !isMonitored)
+                                )
                             }
                     )
                 }
-                Spacer(modifier = Modifier.size(12.dp))
+
                 Text(
                     text = viewModel.city!!.weather!!.desc ?: "...",
                     fontSize = 22.sp
                 )
-                Spacer(modifier = Modifier.size(12.dp))
+
                 Text(
                     text = "Temp: ${viewModel.city!!.weather!!.temp}℃",
                     fontSize = 22.sp
@@ -95,18 +105,17 @@ fun HomePage(viewModel: MainViewModel) {
             }
         }
 
-        // Carregar o forecast se for nulo
         if (viewModel.city!!.forecast == null) {
             viewModel.loadForecast(viewModel.city!!)
             return
         }
 
-        // Renderiza a lista de previsões
-        viewModel.city!!.forecast?.let { list ->
-            LazyColumn {
-                items(list) { forecast ->
-                    ForecastItem(forecast, onClick = { })
-                }
+        // Lista de previsões
+        LazyColumn(
+            modifier = Modifier.padding(horizontal = 16.dp)
+        ) {
+            items(viewModel.city!!.forecast ?: emptyList()) { forecast ->
+                ForecastItem(forecast, onClick = {})
             }
         }
     }
@@ -129,22 +138,154 @@ fun ForecastItem(
             .clickable { onClick(forecast) },
         verticalAlignment = Alignment.CenterVertically
     ) {
-        AsyncImage( // Substitui o Icon
+        AsyncImage(
             model = forecast.imgUrl,
             modifier = Modifier.size(40.dp),
             error = painterResource(id = R.drawable.loading),
             contentDescription = "Imagem"
         )
 
-        Spacer(modifier = Modifier.size(16.dp))
+        Spacer(modifier = Modifier.width(16.dp))
+
         Column {
             Text(text = forecast.weather, fontSize = 24.sp)
             Text(text = forecast.date, fontSize = 20.sp)
-            Spacer(modifier = Modifier.size(12.dp))
-            Text(text = "Min: $tempMin℃", fontSize = 16.sp)
-            Text(text = "Max: $tempMax℃", fontSize = 16.sp)
+            Row {
+                Text(text = "Min: $tempMin℃", fontSize = 16.sp)
+                Spacer(modifier = Modifier.width(16.dp))
+                Text(text = "Max: $tempMax℃", fontSize = 16.sp)
+            }
         }
     }
-
-
 }
+//@Composable
+//fun HomePage(viewModel: MainViewModel) {
+//    val isMonitored = viewModel.city?.isMonitored ?: false
+//    val icon = if (isMonitored) Icons.Filled.Notifications else Icons.Outlined.Notifications
+//    Column {
+//        if (viewModel.city == null) {
+//            Column(
+//                modifier = Modifier.fillMaxSize()
+//                    .background(colorResource(id = R.color.teal_700))
+//                    .wrapContentSize(Alignment.Center)
+//            ) {
+//                Text(
+//                    text = "Selecione uma cidade na lista de favoritas.",
+//                    fontWeight = FontWeight.Bold, color = Color.White,
+//                    modifier = Modifier.align(Alignment.CenterHorizontally),
+//                    textAlign = TextAlign.Center, fontSize = 20.sp
+//                )
+//            }
+//            return
+//        }
+//
+//        // Carregar o weather se for nulo
+//        if (viewModel.city!!.weather == null) {
+//            viewModel.loadWeather(viewModel.city!!)
+//            return
+//        }
+//
+//        Row {
+//            AsyncImage(
+//                model = viewModel.city!!.weather?.imgUrl,
+//                modifier = Modifier.size(100.dp),
+//                error = painterResource(id = R.drawable.loading),
+//                contentDescription = "Imagem"
+//            )
+//            Column {
+//                Spacer(modifier = Modifier.size(12.dp))
+//                Row(verticalAlignment = Alignment.CenterVertically) {
+//                    Text(
+//                        text = viewModel.city!!.name,
+//                        fontSize = 28.sp,
+//                        modifier = Modifier.weight(1f) // Ocupa o espaço restante
+//                    )
+//                    // Ícone de notificação (monitoramento)
+//                    Icon(
+//                        imageVector = icon, contentDescription = "Monitorada?",
+//                        modifier = Modifier.size(32.dp)
+//                            .clickable(enabled = viewModel.city != null) {
+//                                viewModel.update(
+//                                    viewModel.city!!
+//                                        .copy(isMonitored = !isMonitored)
+//                                )
+//                            }
+//                    )
+////                    Icon(
+////                        imageVector = if (viewModel.city!!.isMonitored) Icons.Filled.Notifications else Icons.Outlined.Notifications,
+////                        contentDescription = "Monitorada?",
+////                        modifier = Modifier
+////                            .size(32.dp)
+////                            .clickable(enabled = viewModel.city != null) {
+////                                // Alterna o estado de monitoramento
+////                                val updatedCity =
+////                                    viewModel.city!!.copy(isMonitored = !viewModel.city!!.isMonitored)
+////                                viewModel.update(updatedCity)
+////                            }
+////                    )
+////                }
+//                    Spacer(modifier = Modifier.size(12.dp))
+//                    Text(
+//                        text = viewModel.city!!.weather!!.desc ?: "...",
+//                        fontSize = 22.sp
+//                    )
+//                    Spacer(modifier = Modifier.size(12.dp))
+//                    Text(
+//                        text = "Temp: ${viewModel.city!!.weather!!.temp}℃",
+//                        fontSize = 22.sp
+//                    )
+//                }
+//            }
+//
+//            // Carregar o forecast se for nulo
+//            if (viewModel.city!!.forecast == null) {
+//                viewModel.loadForecast(viewModel.city!!)
+//                return
+//            }
+//
+//            // Renderiza a lista de previsões
+//            viewModel.city!!.forecast?.let { list ->
+//                LazyColumn {
+//                    items(list) { forecast ->
+//                        ForecastItem(forecast, onClick = { })
+//                    }
+//                }
+//            }
+//        }
+//    }
+//}
+//
+//@Composable
+//fun ForecastItem(
+//    forecast: Forecast,
+//    onClick: (Forecast) -> Unit,
+//    modifier: Modifier = Modifier
+//) {
+//    val format = DecimalFormat("#.0")
+//    val tempMin = format.format(forecast.tempMin)
+//    val tempMax = format.format(forecast.tempMax)
+//
+//    Row(
+//        modifier = modifier
+//            .fillMaxWidth()
+//            .padding(12.dp)
+//            .clickable { onClick(forecast) },
+//        verticalAlignment = Alignment.CenterVertically
+//    ) {
+//        AsyncImage( // Substitui o Icon
+//            model = forecast.imgUrl,
+//            modifier = Modifier.size(40.dp),
+//            error = painterResource(id = R.drawable.loading),
+//            contentDescription = "Imagem"
+//        )
+//
+//        Spacer(modifier = Modifier.size(16.dp))
+//        Column {
+//            Text(text = forecast.weather, fontSize = 24.sp)
+//            Text(text = forecast.date, fontSize = 20.sp)
+//            Spacer(modifier = Modifier.size(12.dp))
+//            Text(text = "Min: $tempMin℃", fontSize = 16.sp)
+//            Text(text = "Max: $tempMax℃", fontSize = 16.sp)
+//        }
+//    }
+//}
