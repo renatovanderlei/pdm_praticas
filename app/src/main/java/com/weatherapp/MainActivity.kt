@@ -2,6 +2,8 @@ package com.weatherapp
 
 import android.Manifest
 import android.content.Intent
+import android.content.pm.PackageManager
+import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -16,6 +18,7 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.content.PermissionChecker
 import androidx.core.util.Consumer
@@ -50,112 +53,129 @@ class MainActivity : ComponentActivity() {
     @OptIn(ExperimentalMaterial3Api::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContent {
-            val fbDB = remember { FBDatabase() }
-            val weatherService = remember { WeatherService() }
 
-            val viewModel: MainViewModel = viewModel(
-                factory = MainViewModel.MainViewModelFactory(
-                    db = fbDB,
-                    service = weatherService,
-                    context = this@MainActivity
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            val hasNotificationPermission = ContextCompat.checkSelfPermission(
+                this, Manifest.permission.POST_NOTIFICATIONS
+            ) == PackageManager.PERMISSION_GRANTED
+
+            if (!hasNotificationPermission) {
+                val PERMISSION_REQUEST_CODE = 101
+                ActivityCompat.requestPermissions(
+                    this,
+                    arrayOf(Manifest.permission.POST_NOTIFICATIONS),
+                    PERMISSION_REQUEST_CODE
                 )
-            )
 
-            // Intent handler for notifications - properly indented
-            DisposableEffect(Unit) {
-                val listener = Consumer<Intent> { intent ->
-                    val name = intent.getStringExtra("city")
-                    val city = viewModel.cities.find { it.name == name }
-                    viewModel.city = city
-                    viewModel.page = Route.Home
-                }
-                addOnNewIntentListener(listener)
-                onDispose { removeOnNewIntentListener(listener) }
-            }
+                setContent {
+                    val fbDB = remember { FBDatabase() }
+                    val weatherService = remember { WeatherService() }
 
-            val navController = rememberNavController()
-            val currentRoute = navController.currentBackStackEntryAsState()
-            val showButton = currentRoute.value?.destination?.hasRoute(Route.List::class) ?: false
-            var showDialog by remember { mutableStateOf(false) }
+                    val viewModel: MainViewModel = viewModel(
+                        factory = MainViewModel.MainViewModelFactory(
+                            db = fbDB,
+                            service = weatherService,
+                            context = this@MainActivity
+                        )
+                    )
 
-            // Rest of your code remains the same...
-            val launcher = rememberLauncherForActivityResult(
-                contract = ActivityResultContracts.RequestPermission(),
-                onResult = { granted ->
-                    if (!granted) {
-                        // Handle permission denial
+                    // Intent handler for notifications - properly indented
+                    DisposableEffect(Unit) {
+                        val listener = Consumer<Intent> { intent ->
+                            val name = intent.getStringExtra("city")
+                            val city = viewModel.cities.find { it.name == name }
+                            viewModel.city = city
+                            viewModel.page = Route.Home
+                        }
+                        addOnNewIntentListener(listener)
+                        onDispose { removeOnNewIntentListener(listener) }
                     }
-                }
-            )
 
-            LaunchedEffect(Unit) {
-                if (ContextCompat.checkSelfPermission(
-                        this@MainActivity,
-                        Manifest.permission.ACCESS_FINE_LOCATION
-                    ) != PermissionChecker.PERMISSION_GRANTED
-                ) {
-                    launcher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
-                }
-            }
+                    val navController = rememberNavController()
+                    val currentRoute = navController.currentBackStackEntryAsState()
+                    val showButton =
+                        currentRoute.value?.destination?.hasRoute(Route.List::class) ?: false
+                    var showDialog by remember { mutableStateOf(false) }
 
-            WeatherAppTheme {
-                if (showDialog) {
-                    CityDialog(
-                        onDismiss = { showDialog = false },
-                        onConfirm = { city ->
-                            if (city.isNotBlank()) viewModel.add(city)
-                            showDialog = false
+                    // Rest of your code remains the same...
+                    val launcher = rememberLauncherForActivityResult(
+                        contract = ActivityResultContracts.RequestPermission(),
+                        onResult = { granted ->
+                            if (!granted) {
+                                // Handle permission denial
+                            }
                         }
                     )
-                }
 
-                Scaffold(
-                    topBar = {
-                        TopAppBar(
-                            title = {
-                                val name = viewModel.user?.name ?: "[não logado]"
-                                Text("Bem-vindo/a! $name")
-                            },
-                            actions = {
-                                IconButton(onClick = { finish() }) {
-                                    Icon(
-                                        imageVector = Icons.AutoMirrored.Filled.ExitToApp,
-                                        contentDescription = "Sair"
-                                    )
-                                }
-                            }
-                        )
-                    },
-                    bottomBar = {
-                        val items = listOf(
-                            BottomNavItem.HomeButton,
-                            BottomNavItem.ListButton,
-                            BottomNavItem.MapButton
-                        )
-                        BottomNavBar(viewModel, items)
-                    },
-                    floatingActionButton = {
-                        if (showButton) {
-                            FloatingActionButton(onClick = { showDialog = true }) {
-                                Icon(Icons.Default.Add, contentDescription = "Adicionar")
-                            }
+                    LaunchedEffect(Unit) {
+                        if (ContextCompat.checkSelfPermission(
+                                this@MainActivity,
+                                Manifest.permission.ACCESS_FINE_LOCATION
+                            ) != PermissionChecker.PERMISSION_GRANTED
+                        ) {
+                            launcher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
                         }
                     }
-                ) { innerPadding ->
-                    Box(modifier = Modifier.padding(innerPadding)) {
-                        MainNavHost(navController = navController, viewModel = viewModel)
-                    }
-                    LaunchedEffect(viewModel.page) {
-                        navController.navigate(viewModel.page) {
-                            // Volta pilha de navegação até HomePage (startDest).
-                            navController.graph.startDestinationRoute?.let {
-                                popUpTo(it) {
-                                    saveState = true
+
+                    WeatherAppTheme {
+                        if (showDialog) {
+                            CityDialog(
+                                onDismiss = { showDialog = false },
+                                onConfirm = { city ->
+                                    if (city.isNotBlank()) viewModel.add(city)
+                                    showDialog = false
                                 }
-                                restoreState = true
+                            )
+                        }
+
+                        Scaffold(
+                            topBar = {
+                                TopAppBar(
+                                    title = {
+                                        val name = viewModel.user?.name ?: "[não logado]"
+                                        Text("Bem-vindo/a! $name")
+                                    },
+                                    actions = {
+                                        IconButton(onClick = { finish() }) {
+                                            Icon(
+                                                imageVector = Icons.AutoMirrored.Filled.ExitToApp,
+                                                contentDescription = "Sair"
+                                            )
+                                        }
+                                    }
+                                )
+                            },
+                            bottomBar = {
+                                val items = listOf(
+                                    BottomNavItem.HomeButton,
+                                    BottomNavItem.ListButton,
+                                    BottomNavItem.MapButton
+                                )
+                                BottomNavBar(viewModel, items)
+                            },
+                            floatingActionButton = {
+                                if (showButton) {
+                                    FloatingActionButton(onClick = { showDialog = true }) {
+                                        Icon(Icons.Default.Add, contentDescription = "Adicionar")
+                                    }
+                                }
                             }
-                            launchSingleTop = true
+                        ) { innerPadding ->
+                            Box(modifier = Modifier.padding(innerPadding)) {
+                                MainNavHost(navController = navController, viewModel = viewModel)
+                            }
+                            LaunchedEffect(viewModel.page) {
+                                navController.navigate(viewModel.page) {
+                                    // Volta pilha de navegação até HomePage (startDest).
+                                    navController.graph.startDestinationRoute?.let {
+                                        popUpTo(it) {
+                                            saveState = true
+                                        }
+                                        restoreState = true
+                                    }
+                                    launchSingleTop = true
+                                }
+                            }
                         }
                     }
                 }

@@ -13,7 +13,7 @@ class FBDatabase {
         fun onCityAdded(city: City)
         fun onCityUpdated(city: City)
         fun onCityRemoved(city: City)
-        fun onUserSigOut()
+        fun onUserSignOut()
     }
 
     private val auth = FirebaseAuth.getInstance()

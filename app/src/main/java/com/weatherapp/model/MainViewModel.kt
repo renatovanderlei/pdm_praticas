@@ -150,7 +150,7 @@ class MainViewModel(
         }
     }
 
-    override fun onUserSigOut() {
+    override fun onUserSignOut() {
         _cities.clear()
         monitor.cancelAll()  // Cancela TODOS os workers e notificações
         _city.value = null   // Limpa a cidade selecionada
