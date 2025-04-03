@@ -9,14 +9,16 @@ import com.google.android.gms.maps.model.LatLng
 import com.weatherapp.api.WeatherService
 import com.weatherapp.fb.FBDatabase
 import com.weatherapp.monitor.ForecastMonitor
+import com.weatherapp.repo.Repository
 import com.weatherapp.ui.nav.Route
 import kotlin.random.Random
 
 class MainViewModel(
-    private val db: FBDatabase,
+    private val repo: Repository,  // Mudando para Repository
+    //private val db: FBDatabase,
     private val service: WeatherService,
     private val monitor: ForecastMonitor
-) : ViewModel(), FBDatabase.Listener {
+) : ViewModel(), Repository.Listener {//Mudei do FB para Repo
 
     private var _page = mutableStateOf<Route>(Route.Home)
     var page: Route
@@ -39,7 +41,7 @@ class MainViewModel(
         }
 
     init {
-        db.setListener(this)
+        repo.setListener(this)//repo no lugar do db
     }
 
     private fun refresh(city: City) {
@@ -56,11 +58,11 @@ class MainViewModel(
 
 
     fun remove(city: City) {
-        db.remove(city)
+        repo.remove(city) //repo no lugar do db
     }
 
     fun add(name: String, location: LatLng? = null) {
-        db.add(City(name = name, location = location))
+        repo.add(City(name = name, location = location)) //repo no lugar do db
     }
 
     override fun onUserLoaded(user: User) {
@@ -94,7 +96,8 @@ class MainViewModel(
     fun add(name: String) {
         service.getLocation(name) { lat, lng ->
             if (lat != null && lng != null) {
-                db.add(City(name = name, location = LatLng(lat, lng)))
+                repo.add(City(name = name, location = LatLng(lat, lng)))
+                //repo no lugar do db
             }
         }
     }
@@ -102,7 +105,8 @@ class MainViewModel(
     fun add(location: LatLng) {
         service.getName(location.latitude, location.longitude) { name ->
             if (name != null) {
-                db.add(City(name = name, location = location))
+                repo.add(City(name = name, location = location))
+                //repo no lugar do db
             }
         }
     }
@@ -142,7 +146,7 @@ class MainViewModel(
     }
 
     fun update(city: City) {
-        db.update(city)
+        repo.update(city) //repo no lugar do db
         if (city.isMonitored) {
             monitor.updateCity(city)
         } else {
@@ -157,14 +161,14 @@ class MainViewModel(
     }
 
     class MainViewModelFactory(
-        private val db: FBDatabase,
+        private val repo: Repository, //repo no lugar do db: FBDatabase
         private val service: WeatherService,
         private val context: Context
     ) : ViewModelProvider.Factory {
         override fun <T : ViewModel> create(modelClass: Class<T>): T {
             if (modelClass.isAssignableFrom(MainViewModel::class.java)) {
                 val monitor = ForecastMonitor(context)
-                return MainViewModel(db, service, monitor) as T
+                return MainViewModel(repo, service, monitor) as T //repo no lugar do db
             }
             throw IllegalArgumentException("Unknown ViewModel class")
         }
